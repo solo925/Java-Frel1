@@ -118,8 +118,7 @@ public class TFTPServer {
                         packet.getAddress(), packet.getPort());
                 
                 // Create and start a new session
-                TFTPSession session = new TFTPSession(
-                        sessionSocket, clientAddress, requestPacket, baseDirectory);
+                TFTPSession session = new TFTPSession(sessionSocket, clientAddress, requestPacket, baseDirectory);
                 
                 synchronized (activeSessions) {
                     activeSessions.add(session);

@@ -2,7 +2,6 @@ package com.networkcourse.tftp.common;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
 /**
