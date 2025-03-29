@@ -1,9 +1,12 @@
 package com.networkcourse.tftp.server;
 
 import com.networkcourse.tftp.common.TFTPConstants;
+import com.networkcourse.tftp.common.TFTPRequestPacket;
 import com.networkcourse.tftp.util.FileTransferUtil;
 
 import java.io.*;
+import java.net.DatagramSocket;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -31,6 +34,13 @@ public class TFTPSession implements Runnable {
         this.running = true;
     }
     
+    public TFTPSession(DatagramSocket sessionSocket, InetSocketAddress clientAddress, TFTPRequestPacket requestPacket,
+            String baseDirectory2) {
+                this.clientSocket = new Socket();
+                this.baseDirectory = baseDirectory2;
+        //TODO Auto-generated constructor stub
+    }
+
     @Override
     public void run() {
         try (
