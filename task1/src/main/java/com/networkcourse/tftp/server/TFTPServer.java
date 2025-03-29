@@ -179,8 +179,9 @@ public class TFTPServer {
     
     /**
      * Stops the server.
-     */
-    public void stop() {
+          * @throws IOException 
+          */
+         public void stop() throws IOException {
         if (!running) {
             return;
         }
@@ -212,7 +213,7 @@ public class TFTPServer {
      * 
      * @param args Command line arguments (optional: port)
      */
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         int port = TFTPConstants.DEFAULT_PORT;
         
         // Parse port number from command line arguments
@@ -235,7 +236,14 @@ public class TFTPServer {
             server.start();
             
             // Add shutdown hook to stop the server cleanly
-            Runtime.getRuntime().addShutdownHook(new Thread(server::stop));
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                try {
+                    server.stop();
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }));
             
             System.out.println("TFTP Server started on port " + port);
             System.out.println("Base directory: " + baseDirectory);
