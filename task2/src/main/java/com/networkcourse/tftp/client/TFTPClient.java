@@ -109,52 +109,59 @@ public class TFTPClient {
                 
                 // Receive data packets until the file is complete
                 while (!fileComplete) {
-                    // Read opcode
-                    short opcode = in.readShort();
-                    
-                    if (opcode == TFTPConstants.OP_DATA) {
-                        // Read block number and data length
-                        short blockNumber = in.readShort();
-                        int dataLength = in.readInt();
+                    try {
+                        // Read opcode
+                        short opcode = in.readShort();
                         
-                        // Read data
-                        byte[] buffer = new byte[dataLength];
-                        in.readFully(buffer, 0, dataLength);
-                        
-                        // Write to file
-                        FileTransferUtil.writeBlock(fileOutputStream, buffer, dataLength);
-                        
-                        totalBytes += dataLength;
-                        
-                        // Update progress
-                        System.out.print("\rReceived " + totalBytes + " bytes");
-                        
-                        // If this is a partial block, it's the last one
-                        if (dataLength < TFTPConstants.MAX_DATA_SIZE) {
-                            fileComplete = true;
+                        if (opcode == TFTPConstants.OP_DATA) {
+                            // Read block number and data length
+                            short blockNumber = in.readShort();
+                            int dataLength = in.readInt();
+                            
+                            // Read data
+                            byte[] buffer = new byte[dataLength];
+                            in.readFully(buffer, 0, dataLength);
+                            
+                            // Write to file
+                            FileTransferUtil.writeBlock(fileOutputStream, buffer, dataLength);
+                            
+                            totalBytes += dataLength;
+                            
+                            // Update progress
+                            System.out.print("\rReceived " + totalBytes + " bytes");
+                            
+                            // If this is a partial block, it's the last one
+                            if (dataLength < TFTPConstants.MAX_DATA_SIZE) {
+                                fileComplete = true;
+                            }
+                            
+                        } else if (opcode == TFTPConstants.OP_ERROR) {
+                            // Read error code and message
+                            short errorCode = in.readShort();
+                            int messageLength = in.readInt();
+                            byte[] messageBytes = new byte[messageLength];
+                            in.readFully(messageBytes, 0, messageLength);
+                            String errorMessage = new String(messageBytes);
+                            
+                            System.out.println("\nError from server: " + errorCode + " - " + errorMessage);
+                            return;
+                            
+                        } else {
+                            System.out.println("\nUnexpected response from server");
+                            return;
                         }
-                        
-                    } else if (opcode == TFTPConstants.OP_ERROR) {
-                        // Read error code and message
-                        short errorCode = in.readShort();
-                        int messageLength = in.readInt();
-                        byte[] messageBytes = new byte[messageLength];
-                        in.readFully(messageBytes, 0, messageLength);
-                        String errorMessage = new String(messageBytes);
-                        
-                        System.out.println("\nError from server: " + errorCode + " - " + errorMessage);
-                        return;
-                        
-                    } else {
-                        System.out.println("\nUnexpected response from server");
+                    } catch (EOFException e) {
+                        System.out.println("\nError: Server closed the connection unexpectedly.");
                         return;
                     }
                 }
                 
                 System.out.println("\nDownload complete. " + totalBytes + " bytes received.");
+            } catch (IOException e) {
+                System.out.println("Error: " + e.getMessage());
+                LOGGER.log(Level.WARNING, "Error downloading file", e);
             }
-            
-        } catch (IOException e) {
+        } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
             LOGGER.log(Level.WARNING, "Error downloading file", e);
         }
@@ -232,9 +239,13 @@ public class TFTPClient {
                 }
                 
                 System.out.println("\nUpload complete. " + totalBytes + " bytes sent.");
+            } catch (java.net.ConnectException e) {
+                System.out.println("Error: Could not connect to the server. Ensure the server is running and the port is correct.");
+            } catch (IOException e) {
+                System.out.println("Error: " + e.getMessage());
+                LOGGER.log(Level.WARNING, "Error uploading file", e);
             }
-            
-        } catch (IOException e) {
+        } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
             LOGGER.log(Level.WARNING, "Error uploading file", e);
         }
@@ -273,6 +284,13 @@ public class TFTPClient {
                 System.err.println("Invalid port number: " + args[1]);
                 System.exit(1);
             }
+        }
+
+        try (Socket socket = new Socket(serverHost, serverPort)) {
+            System.out.println("Connected to server at " + serverHost + ":" + serverPort);
+        } catch (IOException e) {
+            System.err.println("Error: Could not connect to the server. Ensure the server is running and the port is correct.");
+            System.exit(1);
         }
         
         // Create and start the client

@@ -50,6 +50,45 @@ Enter choice:
 - Ensure the server is running before starting the client.
 - Files uploaded/downloaded are stored in the working directory of the client/server.
 
+## Testing the Implementation
+
+### Step 1: Create a Test Folder and File
+1. Create a test folder:
+   ```bash
+   mkdir -p /home/davinci/Desktop/Java-Net/test_files
+   ```
+
+2. Create a sample file:
+   ```bash
+   echo "This is a test file for TFTP." > /home/davinci/Desktop/Java-Net/test_files/test.txt
+   ```
+
+### Step 2: Upload the Test File
+1. Start the TCP TFTP Server:
+   ```bash
+   java -cp target/classes com.networkcourse.tftp.server.TFTPServer
+   ```
+
+2. Run the client and choose option `2` (Upload):
+   ```bash
+   java -cp target/classes com.networkcourse.tftp.client.TFTPClient localhost 6969
+   ```
+   - Local filename: /home/davinci/Desktop/Java-Net/test_files/test.txt
+   - Remote filename: test.txt
+
+### Step 3: Download the Test File
+1. Run the client and choose option `1` (Download):
+   ```bash
+   java -cp target/classes com.networkcourse.tftp.client.TFTPClient localhost 6969
+   ```
+   - Remote filename: test.txt
+   - Local filename: /home/davinci/Desktop/Java-Net/test_files/downloaded_test_tcp.txt
+
+2. Verify the downloaded file:
+   ```bash
+   cat /home/davinci/Desktop/Java-Net/test_files/downloaded_test_tcp.txt
+   ```
+
 ## Project Structure
 ```
 src/main/java/com/networkcourse/tftp/
@@ -57,4 +96,3 @@ src/main/java/com/networkcourse/tftp/
 ├── client/       # Client application
 ├── server/       # Server application
 └── util/         # Utility classes
-```

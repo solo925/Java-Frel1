@@ -170,16 +170,18 @@ public class TFTPSession implements Runnable {
         LOGGER.info("Handling write request for file: " + requestPacket.getFilename());
         
         String filePath = baseDirectory + File.separator + requestPacket.getFilename();
+        
+        // Check if file already exists
+        File targetFile = new File(filePath);
+        if (targetFile.exists()) {
+            sendError(TFTPConstants.ERR_FILE_EXISTS, TFTPConstants.ERR_MSG_FILE_EXISTS);
+            return;
+        }
+        
         try (FileOutputStream fileOutputStream = FileTransferUtil.openFileForWriting(filePath)) {
             // Check if file can be written
             if (!FileTransferUtil.isFileWritable(filePath)) {
                 sendError(TFTPConstants.ERR_ACCESS_VIOLATION, TFTPConstants.ERR_MSG_ACCESS_VIOLATION);
-                return;
-            }
-            
-            File targetFile = new File(filePath);
-            if (targetFile.exists()) {
-                sendError(TFTPConstants.ERR_FILE_EXISTS, TFTPConstants.ERR_MSG_FILE_EXISTS);
                 return;
             }
             
